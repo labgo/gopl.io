@@ -1,11 +1,8 @@
 // Copyright © 2016 Alan A. A. Donovan & Brian W. Kernighan.
 // License: https://creativecommons.org/licenses/by-nc-sa/4.0/
 
-// Run with "web" command-line argument for web server.
-// See page 13.
-//!+main
+// Lissajous gera animações GIF de figuras de Lissajous aleatórias.
 
-// Lissajous generates GIF animations of random Lissajous figures.
 package main
 
 import (
@@ -16,57 +13,32 @@ import (
 	"math"
 	"math/rand"
 	"os"
-)
-
-//!-main
-// Packages not needed by version in book.
-import (
-	"log"
-	"net/http"
 	"time"
 )
-
-//!+main
 
 var palette = []color.Color{color.White, color.Black}
 
 const (
-	whiteIndex = 0 // first color in palette
-	blackIndex = 1 // next color in palette
+	whiteIndex = 0 // primeira cor da paleta
+	blackIndex = 1 // primeira cor da paleta
 )
 
 func main() {
-	//!-main
-	// The sequence of images is deterministic unless we seed
-	// the pseudo-random number generator using the current time.
-	// Thanks to Randall McPherson for pointing out the omission.
 	rand.Seed(time.Now().UTC().UnixNano())
-
-	if len(os.Args) > 1 && os.Args[1] == "web" {
-		//!+http
-		handler := func(w http.ResponseWriter, r *http.Request) {
-			lissajous(w)
-		}
-		http.HandleFunc("/", handler)
-		//!-http
-		log.Fatal(http.ListenAndServe("localhost:8000", nil))
-		return
-	}
-	//!+main
 	lissajous(os.Stdout)
 }
 
 func lissajous(out io.Writer) {
 	const (
-		cycles  = 5     // number of complete x oscillator revolutions
-		res     = 0.001 // angular resolution
-		size    = 100   // image canvas covers [-size..+size]
-		nframes = 64    // number of animation frames
-		delay   = 8     // delay between frames in 10ms units
+		cycles  = 5     // número de revoluções completas do oscilador x
+		res     = 0.001 // resolução angular
+		size    = 100   // canvas da imagem cobre de [-size..+size]
+		nframes = 64    // número de quadros da animação
+		delay   = 8     // tempo entre frames em unidades de 10 ms
 	)
-	freq := rand.Float64() * 3.0 // relative frequency of y oscillator
+	freq := rand.Float64() * 3.0 // frequência relativa do oscilador y
 	anim := gif.GIF{LoopCount: nframes}
-	phase := 0.0 // phase difference
+	phase := 0.0 // diferença de fase
 	for i := 0; i < nframes; i++ {
 		rect := image.Rect(0, 0, 2*size+1, 2*size+1)
 		img := image.NewPaletted(rect, palette)
@@ -80,7 +52,5 @@ func lissajous(out io.Writer) {
 		anim.Delay = append(anim.Delay, delay)
 		anim.Image = append(anim.Image, img)
 	}
-	gif.EncodeAll(out, &anim) // NOTE: ignoring encoding errors
+	gif.EncodeAll(out, &anim) // NOTA: ignorando erros de codificação
 }
-
-//!-main
